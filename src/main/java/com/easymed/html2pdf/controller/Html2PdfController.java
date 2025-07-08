@@ -1,23 +1,29 @@
 package com.easymed.html2pdf.controller;
 
-import com.easymed.html2pdf.model.PdfRequest;
-import com.easymed.html2pdf.model.PdfJob;
-import com.easymed.html2pdf.model.PdfJobResult;
-import com.easymed.html2pdf.model.PdfJobStatus;
-import com.easymed.html2pdf.service.Html2PdfService;
-import com.easymed.html2pdf.service.AsyncPdfJobService;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.easymed.html2pdf.model.PdfJobResult;
+import com.easymed.html2pdf.model.PdfJobStatus;
+import com.easymed.html2pdf.model.PdfRequest;
+import com.easymed.html2pdf.service.AsyncPdfJobService;
+import com.easymed.html2pdf.service.Html2PdfService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "HTML to PDF", description = "Endpoints for converting HTML to PDF synchronously and asynchronously.")

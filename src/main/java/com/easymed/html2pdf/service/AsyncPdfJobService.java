@@ -1,15 +1,22 @@
 package com.easymed.html2pdf.service;
 
-import com.easymed.html2pdf.model.*;
-import com.easymed.html2pdf.repository.PdfJobRepository;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.util.UUID;
-import java.util.concurrent.*;
+
+import com.easymed.html2pdf.model.PdfJob;
+import com.easymed.html2pdf.model.PdfJobResult;
+import com.easymed.html2pdf.model.PdfJobStatus;
+import com.easymed.html2pdf.model.PdfRequest;
+import com.easymed.html2pdf.repository.PdfJobRepository;
 
 @Service
 @EnableAsync

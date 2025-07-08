@@ -1,12 +1,14 @@
 package com.easymed.html2pdf.service;
 
-import com.github.jhonnymertz.wkhtmltopdf.wrapper.Pdf;
-import com.github.jhonnymertz.wkhtmltopdf.wrapper.params.Param;
-import com.easymed.html2pdf.model.PdfRequest;
-import com.github.jhonnymertz.wkhtmltopdf.wrapper.configurations.WrapperConfig;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.easymed.html2pdf.model.PdfRequest;
+import com.github.jhonnymertz.wkhtmltopdf.wrapper.Pdf;
+import com.github.jhonnymertz.wkhtmltopdf.wrapper.configurations.WrapperConfig;
+import com.github.jhonnymertz.wkhtmltopdf.wrapper.params.Param;
 
 @Service
 public class Html2PdfService {

@@ -8,6 +8,7 @@ public class PdfRequest {
     private Map<String, String> globalOptions;
     private List<Map<String, String>> pageOptions;
     private String scheduledTime;
+    private boolean rtl = true;
 
     public PdfRequest() {}
 
@@ -41,5 +42,13 @@ public class PdfRequest {
 
     public void setScheduledTime(String scheduledTime) {
         this.scheduledTime = scheduledTime;
+    }
+
+    public boolean isRtl() {
+        return rtl;
+    }
+
+    public void setRtl(boolean rtl) {
+        this.rtl = rtl;
     }
 } 

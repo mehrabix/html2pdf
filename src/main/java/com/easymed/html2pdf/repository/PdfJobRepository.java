@@ -1,14 +1,18 @@
 package com.easymed.html2pdf.repository;
 
-import com.easymed.html2pdf.model.PdfJob;
-import org.springframework.stereotype.Repository;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.easymed.html2pdf.entity.PdfJob;
+import com.easymed.html2pdf.model.PdfJobStatus;
 
 @Repository
-public class PdfJobRepository {
-    private final Map<UUID, PdfJob> jobs = new ConcurrentHashMap<>();
-    public void save(PdfJob job) { jobs.put(job.getId(), job); }
-    public PdfJob findById(UUID id) { return jobs.get(id); }
+public interface PdfJobRepository extends JpaRepository<PdfJob, UUID> {
+    Optional<PdfJob> findFirstByJobStatus(PdfJobStatus status);
+    List<PdfJob> findByJobStatusAndUpdatedAtBefore(PdfJobStatus status, LocalDateTime time);
 } 

@@ -104,6 +104,7 @@ This project includes a ready-to-use Dockerfile that installs all dependencies f
 ### Use the Prebuilt Docker Image
 
 You can use the prebuilt image from Docker Hub without building locally:
+https://hub.docker.com/r/ahmadmehrabix/html2pdf
 
 ```sh
 docker pull ahmadmehrabix/html2pdf:latest

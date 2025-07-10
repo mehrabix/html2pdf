@@ -106,6 +106,7 @@
 ### استفاده از ایمیج آماده Docker
 
 شما می‌توانید بدون نیاز به ساخت ایمیج، مستقیماً از ایمیج آماده در Docker Hub استفاده کنید:
+https://hub.docker.com/r/ahmadmehrabix/html2pdf
 
 ```sh
 docker pull ahmadmehrabix/html2pdf:latest

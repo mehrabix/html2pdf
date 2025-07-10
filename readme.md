@@ -106,11 +106,11 @@
 ### استفاده از ایمیج آماده Docker
 
 شما می‌توانید بدون نیاز به ساخت ایمیج، مستقیماً از ایمیج آماده در Docker Hub استفاده کنید:
-https://hub.docker.com/r/ahmadmehrabix/html2pdf
+https://hub.docker.com/r/mehrabix/html2pdf
 
 ```sh
-docker pull ahmadmehrabix/html2pdf:latest
-docker run -p 3000:3000 ahmadmehrabix/html2pdf:latest
+docker pull mehrabix/html2pdf:latest
+docker run -p 3000:3000 mehrabix/html2pdf:latest
 ```
 
 این روش سریع‌ترین راه برای راه‌اندازی سرویس است. در صورت نیاز به شخصی‌سازی (مثلاً تغییر فونت یا jar)، می‌توانید طبق مراحل قبلی ایمیج اختصاصی خود را بسازید.

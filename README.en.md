@@ -104,10 +104,11 @@ This project includes a ready-to-use Dockerfile that installs all dependencies f
 ### Use the Prebuilt Docker Image
 
 You can use the prebuilt image from Docker Hub without building locally:
+https://hub.docker.com/r/mehrabix/html2pdf
 
 ```sh
-docker pull ahmadmehrabix/html2pdf:latest
-docker run -p 3000:3000 ahmadmehrabix/html2pdf:latest
+docker pull mehrabix/html2pdf:latest
+docker run -p 3000:3000 mehrabix/html2pdf:latest
 ```
 
 This is the fastest way to get started. For customization (e.g., changing fonts or the jar), build your own image as described above. 

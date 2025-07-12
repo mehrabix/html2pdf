@@ -234,8 +234,24 @@ public class Html2PdfService {
                 }
             }
             
+            // Check if content has headings for TOC generation
+            boolean hasHeadings = false;
             if (request.isAddToc()) {
-                pdf.addToc();
+                for (String html : htmlPages) {
+                    if (html != null && (html.toLowerCase().contains("<h1") || 
+                                        html.toLowerCase().contains("<h2") || 
+                                        html.toLowerCase().contains("<h3") || 
+                                        html.toLowerCase().contains("<h4") || 
+                                        html.toLowerCase().contains("<h5") || 
+                                        html.toLowerCase().contains("<h6"))) {
+                        hasHeadings = true;
+                        break;
+                    }
+                }
+                
+                if (hasHeadings) {
+                    pdf.addToc();
+                }
             }
             
             byte[] pdfBytes = null;

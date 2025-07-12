@@ -32,7 +32,8 @@ public class Html2PdfService {
         this.rtlCss = String.format(
             "@font-face { font-family: 'Vazirmatn'; src: url(data:font/woff2;base64,%s) format('woff2'); font-weight: normal; font-style: normal; }" +
             "@font-face { font-family: 'Vazirmatn'; src: url(data:font/woff2;base64,%s) format('woff2'); font-weight: bold; font-style: normal; }" +
-            "body { font-family: 'Vazirmatn', Tahoma, Arial, 'Arial Unicode MS', sans-serif; direction: rtl; }",
+            "* { font-family: 'Vazirmatn', Tahoma, Arial, 'Arial Unicode MS', sans-serif !important; }" +
+            "body { direction: rtl; }",
             regularFont, boldFont
         );
     }
@@ -160,7 +161,7 @@ public class Html2PdfService {
                 }
                 
                 String fullFooterHtml = "<html><head><meta charset='UTF-8'><style>" +
-                (request.isRtl() ? rtlCss : "body { font-family: Arial, sans-serif; direction: ltr; }") +
+                (request.isRtl() ? rtlCss : "* { font-family: Arial, sans-serif !important; } body { direction: ltr; }") +
                 "</style>" + script + "</head>" + footerContent + "</html>";
                     
                 tempFooterFile = File.createTempFile("footer", ".html");
@@ -177,7 +178,7 @@ public class Html2PdfService {
                 }
             
                 String fullHeaderHtml = "<html><head><meta charset='UTF-8'><style>" +
-                (request.isRtl() ? rtlCss : "body { font-family: Arial, sans-serif; direction: ltr; }") +
+                (request.isRtl() ? rtlCss : "* { font-family: Arial, sans-serif !important; } body { direction: ltr; }") +
                 "</style></head>" + headerHtml.substring(headerHtml.indexOf("<body")) + "</html>";
                     
                 tempHeaderFile = File.createTempFile("header", ".html");
@@ -211,7 +212,7 @@ public class Html2PdfService {
                 if (request.isRtl()) {
                     style = this.rtlCss;
                 } else {
-                    style = "body { font-family: Arial, sans-serif; direction: ltr; }";
+                    style = "* { font-family: Arial, sans-serif !important; } body { direction: ltr; }";
                 }
                 headContent.append("<style>").append(style).append("</style>");
                 

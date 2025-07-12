@@ -21,6 +21,7 @@ public class PdfRequest {
     private boolean printMediaType;
     private String footerHtml;
     private boolean addPageNumbering;
+    private String pageNumberingText;
 
     public PdfRequest() {}
 
@@ -58,4 +59,6 @@ public class PdfRequest {
     public void setFooterHtml(String footerHtml) { this.footerHtml = footerHtml; }
     public boolean isAddPageNumbering() { return addPageNumbering; }
     public void setAddPageNumbering(boolean addPageNumbering) { this.addPageNumbering = addPageNumbering; }
+    public String getPageNumberingText() { return pageNumberingText; }
+    public void setPageNumberingText(String pageNumberingText) { this.pageNumberingText = pageNumberingText; }
 } 

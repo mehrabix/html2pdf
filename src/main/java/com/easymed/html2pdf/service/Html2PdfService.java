@@ -150,7 +150,8 @@ public class Html2PdfService {
                 String footerContent;
 
                 if (addPageNumbering) {
-                    footerContent = "<body><div style='text-align: center; font-size: 10px;'>صفحه [page] از [topage]</div></body>";
+                    String pageText = request.getPageNumberingText() != null ? request.getPageNumberingText() : "صفحه [page] از [topage]";
+                    footerContent = "<body><div style='text-align: center; font-size: 10px;'>" + pageText + "</div></body>";
                 } else {
                     if (!footerHtml.toLowerCase().contains("<html") || !footerHtml.toLowerCase().contains("<body")) {
                         return errorPdf("مقدار footerHtml باید یک HTML کامل باشد.");

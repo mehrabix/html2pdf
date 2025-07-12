@@ -22,6 +22,7 @@ public class PdfRequest {
     private String footerHtml;
     private boolean addPageNumbering;
     private String pageNumberingText;
+    private boolean normalizeColors;
 
     public PdfRequest() {}
 
@@ -61,4 +62,6 @@ public class PdfRequest {
     public void setAddPageNumbering(boolean addPageNumbering) { this.addPageNumbering = addPageNumbering; }
     public String getPageNumberingText() { return pageNumberingText; }
     public void setPageNumberingText(String pageNumberingText) { this.pageNumberingText = pageNumberingText; }
+    public boolean isNormalizeColors() { return normalizeColors; }
+    public void setNormalizeColors(boolean normalizeColors) { this.normalizeColors = normalizeColors; }
 } 

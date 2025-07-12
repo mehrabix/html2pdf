@@ -50,6 +50,9 @@ public class Html2PdfService {
     }
 
     public byte[] generatePdf(PdfRequest request) {
+        // Normalization CSS for ink saving
+        String normalizationCss = "html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video, input, textarea, select, button, * { background: #fff !important; background-color: #fff !important; background-image: none !important; background-repeat: no-repeat !important; background-attachment: scroll !important; background-position: 0% 0% !important; color: #222 !important; box-shadow: none !important; border-color: #ccc !important; text-shadow: none !important; filter: brightness(1.2) !important; } *::before, *::after { background: #fff !important; background-color: #fff !important; background-image: none !important; } [style*=\"background\"] { background: #fff !important; background-color: #fff !important; background-image: none !important; } [style*=\"Background\"] { background: #fff !important; background-color: #fff !important; background-image: none !important; } [style*=\"BACKGROUND\"] { background: #fff !important; background-color: #fff !important; background-image: none !important; } [class*=\"bg-\"], [class*=\"background-\"], [class*=\"dark\"], [class*=\"black\"], [class*=\"gray\"], [class*=\"grey\"] { background: #fff !important; background-color: #fff !important; background-image: none !important; } [id*=\"bg-\"], [id*=\"background-\"], [id*=\"dark\"], [id*=\"black\"], [id*=\"gray\"], [id*=\"grey\"] { background: #fff !important; background-color: #fff !important; background-image: none !important; } [style*=\"#7e7e7e\"], [style*=\"#7E7E7E\"], [style*=\"rgb(126,126,126)\"], [style*=\"rgb(126, 126, 126)\"] { background: #fff !important; background-color: #fff !important; color: #222 !important; } [style*=\"#666\"], [style*=\"#777\"], [style*=\"#888\"], [style*=\"#999\"], [style*=\"#aaa\"], [style*=\"#bbb\"] { background: #fff !important; background-color: #fff !important; color: #222 !important; }";
+        String normalizationScript = "<script>window.addEventListener('load', function() { document.querySelectorAll('*').forEach(function(el) { el.style.setProperty('background', '#fff', 'important'); el.style.setProperty('background-color', '#fff', 'important'); el.style.setProperty('background-image', 'none', 'important'); el.style.setProperty('color', '#222', 'important'); el.style.setProperty('box-shadow', 'none', 'important'); }); });</script>";
         File tempStyleSheet = null;
         File tempHeaderFile = null;
         File tempFooterFile = null;
@@ -162,7 +165,8 @@ public class Html2PdfService {
                 
                 String fullFooterHtml = "<html><head><meta charset='UTF-8'><style>" +
                 (request.isRtl() ? rtlCss : "* { font-family: Arial, sans-serif !important; } body { direction: ltr; }") +
-                "</style>" + script + "</head>" + footerContent + "</html>";
+                (request.isNormalizeColors() ? normalizationCss : "") +
+                "</style>" + (request.isNormalizeColors() ? normalizationScript : "") + script + "</head>" + footerContent + "</html>";
                     
                 tempFooterFile = File.createTempFile("footer", ".html");
                 try (FileWriter writer = new FileWriter(tempFooterFile, StandardCharsets.UTF_8)) {
@@ -179,7 +183,8 @@ public class Html2PdfService {
             
                 String fullHeaderHtml = "<html><head><meta charset='UTF-8'><style>" +
                 (request.isRtl() ? rtlCss : "* { font-family: Arial, sans-serif !important; } body { direction: ltr; }") +
-                "</style></head>" + headerHtml.substring(headerHtml.indexOf("<body")) + "</html>";
+                (request.isNormalizeColors() ? normalizationCss : "") +
+                "</style>" + (request.isNormalizeColors() ? normalizationScript : "") + "</head>" + headerHtml.substring(headerHtml.indexOf("<body")) + "</html>";
                     
                 tempHeaderFile = File.createTempFile("header", ".html");
                 try (FileWriter writer = new FileWriter(tempHeaderFile, StandardCharsets.UTF_8)) {
@@ -213,6 +218,10 @@ public class Html2PdfService {
                     style = this.rtlCss;
                 } else {
                     style = "* { font-family: Arial, sans-serif !important; } body { direction: ltr; }";
+                }
+                if (request.isNormalizeColors()) {
+                    style += normalizationCss;
+                    headContent.append(normalizationScript);
                 }
                 headContent.append("<style>").append(style).append("</style>");
                 

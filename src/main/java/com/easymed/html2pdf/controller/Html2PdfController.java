@@ -12,14 +12,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.easymed.html2pdf.model.AsyncResponse;
+import com.easymed.html2pdf.model.PagedResponse;
 import com.easymed.html2pdf.model.PdfJobResult;
 import com.easymed.html2pdf.model.PdfJobStatus;
 import com.easymed.html2pdf.model.PdfRequest;
+import com.easymed.html2pdf.model.ScheduledJobInfo;
+import com.easymed.html2pdf.model.ScheduledJobsQuery;
 import com.easymed.html2pdf.service.AsyncPdfJobService;
 import com.easymed.html2pdf.service.Html2PdfService;
+import com.easymed.html2pdf.service.SessionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +32,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Tag(name = "تبدیل HTML به PDF / HTML to PDF Conversion", description = "مجموعه ای از اندپوینت ها برای تبدیل HTML به PDF به صورت همزمان و غیرهمزمان. / A set of endpoints for converting HTML to PDF synchronously and asynchronously.")
 @RestController
@@ -36,6 +43,8 @@ public class Html2PdfController {
     private Html2PdfService html2PdfService;
     @Autowired
     private AsyncPdfJobService asyncPdfJobService;
+    @Autowired
+    private SessionService sessionService;
 
     @Operation(summary = "تولید PDF به صورت همزمان / Generate PDF synchronously", description = "یک یا چند صفحه HTML را به فایل PDF تبدیل کرده و نتیجه را بلافاصله برمی‌گرداند. / Converts one or more HTML pages to a PDF file and returns the result immediately.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -50,7 +59,8 @@ public class Html2PdfController {
         )
     )
     @PostMapping("/sync")
-    public ResponseEntity<ByteArrayResource> generatePdfSync(@RequestBody PdfRequest request) {
+    public ResponseEntity<ByteArrayResource> generatePdfSync(@RequestBody PdfRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        sessionService.getOrCreateSessionId(httpRequest, httpResponse);
         byte[] pdf = html2PdfService.generatePdf(request);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.pdf")
@@ -74,23 +84,30 @@ public class Html2PdfController {
         )
     )
     @PostMapping("/async")
-    public ResponseEntity<AsyncResponse> generatePdfAsync(@RequestBody PdfRequest request) {
-        UUID jobId = asyncPdfJobService.submitJob(request);
+    public ResponseEntity<AsyncResponse> generatePdfAsync(@RequestBody PdfRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        String sessionId = sessionService.getOrCreateSessionId(httpRequest, httpResponse);
+        UUID jobId = asyncPdfJobService.submitJob(request, sessionId);
         return ResponseEntity.ok(new AsyncResponse(jobId));
     }
 
     @Operation(summary = "بررسی وضعیت کار / Check job status", description = "وضعیت یک کار تولید PDF را با استفاده از شناسه آن برمی‌گرداند. / Returns the status of a PDF generation job using its ID.")
     @GetMapping("/job/{id}/status")
     public ResponseEntity<PdfJobStatus> getJobStatus(
-        @Parameter(description = "شناسه کار (Job ID) که پس از ثبت کار غیرهمزمان دریافت شده است / The job ID received after submitting an async job") @PathVariable UUID id) {
-        return ResponseEntity.ok(asyncPdfJobService.getJobStatus(id));
+        @Parameter(description = "شناسه کار (Job ID) که پس از ثبت کار غیرهمزمان دریافت شده است / The job ID received after submitting an async job") @PathVariable UUID id, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        String sessionId = sessionService.getOrCreateSessionId(httpRequest, httpResponse);
+        PdfJobStatus status = asyncPdfJobService.getJobStatus(id, sessionId);
+        if (status == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(status);
     }
 
     @Operation(summary = "دریافت نتیجه کار / Get job result", description = "نتیجه PDF یک کار تکمیل شده را برمی‌گرداند. پس از دانلود، کار از سیستم حذف خواهد شد. / Returns the PDF result of a completed job. After download, the job is removed from the system.")
     @GetMapping("/job/{id}/result")
     public ResponseEntity<?> getJobResult(
-        @Parameter(description = "شناسه کار (Job ID) برای دریافت فایل PDF نهایی / The job ID to retrieve the final PDF file") @PathVariable UUID id) {
-        PdfJobResult result = asyncPdfJobService.getJobResultAndClear(id);
+        @Parameter(description = "شناسه کار (Job ID) برای دریافت فایل PDF نهایی / The job ID to retrieve the final PDF file") @PathVariable UUID id, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        String sessionId = sessionService.getOrCreateSessionId(httpRequest, httpResponse);
+        PdfJobResult result = asyncPdfJobService.getJobResultAndClear(id, sessionId);
         if (result == null || result.getPdf() == null) {
             return ResponseEntity.notFound().build();
         }
@@ -98,5 +115,71 @@ public class Html2PdfController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(new ByteArrayResource(result.getPdf()));
+    }
+
+    @Operation(
+        summary = "دریافت لیست کارهای زمانبندی شده / Get list of scheduled jobs", 
+        description = "لیست تمام کارهای زمانبندی شده که هنوز اجرا نشده‌اند را با پشتیبانی از صفحه‌بندی، مرتب‌سازی و فیلترینگ برمی‌گرداند. / Returns a paginated, sortable, and filterable list of all scheduled jobs that have not been executed yet."
+    )
+    @GetMapping("/jobs/scheduled")
+    public ResponseEntity<PagedResponse<ScheduledJobInfo>> getScheduledJobs(
+            @RequestParam(defaultValue = "0") int skip,
+            @RequestParam(defaultValue = "10") int take,
+            @RequestParam(defaultValue = "scheduledTime") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) String titleFilter,
+            @RequestParam(required = false) String scheduledAfter,
+            @RequestParam(required = false) String scheduledBefore,
+            @RequestParam(required = false) Integer minPageCount,
+            @RequestParam(required = false) Integer maxPageCount,
+            @RequestParam(required = false) Boolean rtl,
+            @RequestParam(required = false) Boolean addToc,
+            @RequestParam(required = false) Boolean outline,
+            @RequestParam(required = false) Boolean grayscale,
+            @RequestParam(required = false) Boolean lowQuality,
+            @RequestParam(required = false) Boolean printMediaType,
+            @RequestParam(required = false) Boolean addPageNumbering,
+            @RequestParam(required = false) String pageSize,
+            @RequestParam(required = false) String orientation,
+            @RequestParam(required = false) Boolean hasCustomHeader,
+            @RequestParam(required = false) Boolean hasCustomFooter,
+            HttpServletRequest httpRequest, 
+            HttpServletResponse httpResponse) {
+        
+        String sessionId = sessionService.getOrCreateSessionId(httpRequest, httpResponse);
+        
+        ScheduledJobsQuery query = new ScheduledJobsQuery();
+        query.setSkip(skip);
+        query.setTake(take);
+        query.setSortBy(sortBy);
+        query.setSortDirection(sortDirection);
+        query.setTitleFilter(titleFilter);
+        
+        try {
+            if (scheduledAfter != null && !scheduledAfter.trim().isEmpty()) {
+                query.setScheduledAfter(java.time.LocalDateTime.parse(scheduledAfter));
+            }
+            if (scheduledBefore != null && !scheduledBefore.trim().isEmpty()) {
+                query.setScheduledBefore(java.time.LocalDateTime.parse(scheduledBefore));
+            }
+        } catch (Exception e) {
+        }
+        
+        query.setMinPageCount(minPageCount);
+        query.setMaxPageCount(maxPageCount);
+        query.setRtl(rtl);
+        query.setAddToc(addToc);
+        query.setOutline(outline);
+        query.setGrayscale(grayscale);
+        query.setLowQuality(lowQuality);
+        query.setPrintMediaType(printMediaType);
+        query.setAddPageNumbering(addPageNumbering);
+        query.setPageSize(pageSize);
+        query.setOrientation(orientation);
+        query.setHasCustomHeader(hasCustomHeader);
+        query.setHasCustomFooter(hasCustomFooter);
+        
+        PagedResponse<ScheduledJobInfo> response = asyncPdfJobService.getScheduledJobs(sessionId, query);
+        return ResponseEntity.ok(response);
     }
 } 

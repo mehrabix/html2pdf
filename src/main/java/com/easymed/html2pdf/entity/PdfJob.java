@@ -34,6 +34,10 @@ public class PdfJob {
 
     private String errorMessage;
 
+    private String sessionId;
+
+    private LocalDateTime scheduledTime;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

@@ -12,9 +12,9 @@ public class AsyncConfig {
     @Bean("pdfExecutor")
     public Executor pdfExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2); // Number of threads to keep in the pool
-        executor.setMaxPoolSize(4); // Maximum number of threads to allow
-        executor.setQueueCapacity(50); // Number of jobs to queue before rejecting new tasks
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("PdfGenerator-");
         executor.initialize();
         return executor;
